@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Cross‑platform launcher for EAQTS on Windows.
+# Allows `./eaqts` (or `eaqts` from git‑bash) to run the same
+# single‑word command that works in a normal Windows CMD prompt.
+
+# Resolve the directory of this script (the repository root)
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Invoke the Windows batch wrapper via cmd.exe
+cmd.exe /c "${DIR}\\eaqts.cmd" "$@"
