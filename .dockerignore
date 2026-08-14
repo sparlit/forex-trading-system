@@ -1,0 +1,81 @@
+# Git
+.git
+.github
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Testing
+.coverage
+.pytest_cache
+.tox
+.nox
+.mypy_cache
+.ruff_cache
+
+# Build
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Data
+data/
+models/
+*.db
+*.sqlite
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Docker
+.dockerignore
+Dockerfile*
+docker-compose*.yml
+
+# Documentation
+*.md
+docs/
+
+# Scripts
+scripts/*.bat
+scripts/*.ps1
+
+# Test files
+test_*.py
+test*.toml
+verify_*.py
+check_*.py
+
+# Poetry
+poetry.lock
+poetry.toml
+
+# Other
+*.zip
+*.tar.gz

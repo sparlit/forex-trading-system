@@ -1,0 +1,74 @@
+{
+  "dashboard": {
+    "title": "Forex Trading System Overview",
+    "tags": [
+      "forex",
+      "trading"
+    ],
+    "timezone": "utc",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Equity Curve",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "forex_equity",
+            "legendFormat": "Equity"
+          }
+        ],
+        "xaxis": {
+          "mode": "time"
+        },
+        "yaxis": {
+          "format": "currencyUSD"
+        }
+      },
+      {
+        "id": 2,
+        "title": "Open Positions",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "forex_open_positions",
+            "legendFormat": "Positions"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Daily P&L",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "forex_daily_pnl",
+            "legendFormat": "P&L"
+          }
+        ],
+        "xaxis": {
+          "mode": "time"
+        }
+      },
+      {
+        "id": 4,
+        "title": "System Health",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "up{job=~\"forex.*\"}",
+            "legendFormat": "{{job}}"
+          }
+        ]
+      }
+    ],
+    "time": {
+      "from": "now-24h",
+      "to": "now"
+    },
+    "refresh": "10s"
+  }
+}

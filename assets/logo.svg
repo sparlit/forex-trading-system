@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0e1117;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#161b22;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="candleGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#26a69a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3fb950;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="candleGrad2" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#ef5350;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f85149;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#58a6ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#a371f7;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="512" height="512" rx="80" fill="url(#bgGrad)"/>
+  <rect width="512" height="512" rx="80" fill="none" stroke="#30363d" stroke-width="3"/>
+
+  <g stroke="#21262d" stroke-width="1" opacity="0.5">
+    <line x1="96" y1="320" x2="416" y2="320"/>
+    <line x1="96" y1="256" x2="416" y2="256"/>
+    <line x1="96" y1="192" x2="416" y2="192"/>
+    <line x1="96" y1="128" x2="416" y2="128"/>
+  </g>
+
+  <line x1="120" y1="240" x2="120" y2="320" stroke="#26a69a" stroke-width="3"/>
+  <rect x="100" y="260" width="40" height="40" rx="4" fill="url(#candleGrad)" filter="url(#glow)"/>
+
+  <line x1="170" y1="170" x2="170" y2="280" stroke="#ef5350" stroke-width="3"/>
+  <rect x="150" y="190" width="40" height="70" rx="4" fill="url(#candleGrad2)" filter="url(#glow)"/>
+
+  <line x1="220" y1="180" x2="220" y2="270" stroke="#26a69a" stroke-width="3"/>
+  <rect x="200" y="195" width="40" height="55" rx="4" fill="url(#candleGrad)" filter="url(#glow)"/>
+
+  <line x1="270" y1="130" x2="270" y2="240" stroke="#26a69a" stroke-width="3"/>
+  <rect x="250" y="145" width="40" height="80" rx="4" fill="url(#candleGrad)" filter="url(#glow)"/>
+
+  <line x1="320" y1="150" x2="320" y2="230" stroke="#ef5350" stroke-width="3"/>
+  <rect x="300" y="170" width="40" height="50" rx="4" fill="url(#candleGrad2)" filter="url(#glow)"/>
+
+  <line x1="370" y1="110" x2="370" y2="200" stroke="#26a69a" stroke-width="3"/>
+  <rect x="350" y="125" width="40" height="65" rx="4" fill="url(#candleGrad)" filter="url(#glow)"/>
+
+  <polyline points="120,320 170,260 220,235 270,200 320,190 370,160"
+    stroke="url(#lineGrad)" stroke-width="3" fill="none"
+    stroke-linecap="round" stroke-linejoin="round"
+    filter="url(#glow)"/>
+
+  <polygon points="370,160 362,152 362,168" fill="#a371f7" filter="url(#glow)"/>
+
+  <text x="256" y="400" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif"
+    font-size="52" font-weight="bold" fill="#58a6ff" filter="url(#glow)">EAQTS</text>
+  <text x="256" y="435" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif"
+    font-size="14" fill="#8b949e" letter-spacing="3">AUTONOMOUS QUANTUM TRADING</text>
+</svg>

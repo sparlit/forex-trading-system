@@ -1,0 +1,61 @@
+# Forex Trading System - Requirements
+# Generated from pyproject.toml
+# Install with: pip install -r requirements.txt
+
+# Core
+python-dotenv>=1.0.0
+pydantic>=2.6.0
+pydantic-settings>=2.2.0
+pyyaml>=6.0.1
+
+# Data Processing
+polars>=1.0.0
+numpy>=1.26.0
+scipy>=1.12.0
+numba>=0.59.0
+duckdb>=1.0.0
+
+# Time Series Database
+asyncpg>=0.29.0
+sqlalchemy>=2.0.25
+timescale-vector>=0.1.0
+redis>=5.0.0
+influxdb-client>=1.38.0
+
+# Message Bus
+nats-py>=2.7.0
+
+# Trading Connectors
+MetaTrader5>=5.0.45
+ccxt>=4.2.0
+
+# Machine Learning
+torch>=2.2.0
+lightgbm>=4.2.0
+xgboost>=2.1.0
+optuna>=3.6.0
+river>=0.21.0
+scikit-learn>=1.4.0
+hmmlearn>=0.3.0
+
+# API & Web
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+websockets>=12.0
+streamlit>=1.31.0
+plotly>=5.18.0
+
+# Monitoring
+prometheus-client>=0.19.0
+structlog>=24.1.0
+sentry-sdk>=1.40.0
+
+# Utilities
+python-json-logger>=2.0.7
+rich>=13.7.0
+typer>=0.12.0
+aiofiles>=23.2.1
+httpx>=0.26.0
+tenacity>=8.2.3
+python-multipart>=0.0.6
+email-validator>=2.1.0

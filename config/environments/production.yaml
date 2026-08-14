@@ -1,0 +1,146 @@
+app:
+  name: "forex-trading-system"
+  environment: "production"
+  debug: false
+  log_level: "INFO"
+  log_format: "json"
+
+api:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 4
+  reload: false
+  prefix: "/api/v1"
+  cors_origins: ["https://yourdomain.com"]
+
+database:
+  timescale:
+    host: "${TIMESCALE_HOST}"
+    port: 5432
+    database: "market_data"
+    user: "${TIMESCALE_USER}"
+    password: "${TIMESCALE_PASSWORD}"
+    pool_size: 20
+    max_overflow: 10
+    ssl_mode: "require"
+
+  redis:
+    host: "${REDIS_HOST}"
+    port: 6379
+    db: 0
+    password: "${REDIS_PASSWORD}"
+    ssl: true
+    max_connections: 100
+    decode_responses: true
+
+  influx:
+    url: "${INFLUX_URL}"
+    token: "${INFLUX_TOKEN}"
+    org: "${INFLUX_ORG}"
+    bucket: "metrics"
+    timeout: 10000
+
+messaging:
+  nats:
+    servers: ["${NATS_URL}"]
+    name: "forex-trading-system-prod"
+    max_reconnect_attempts: -1
+    reconnect_time_wait: 2
+
+brokers:
+  mt5:
+    enabled: true
+    login: ${MT5_LOGIN}
+    password: "${MT5_PASSWORD}"
+    server: "${MT5_SERVER}"
+    path: ""
+    timeout: 60000
+    portable: false
+
+  ctrader:
+    enabled: true
+    client_id: "${CTRADER_CLIENT_ID}"
+    client_secret: "${CTRADER_CLIENT_SECRET}"
+    access_token: "${CTRADER_ACCESS_TOKEN}"
+    refresh_token: "${CTRADER_REFRESH_TOKEN}"
+    host: "live.ctraderapi.com"
+    port: 443
+
+  ccxt:
+    enabled: true
+    exchanges: ["binance", "bybit", "kraken", "coinbase"]
+    api_keys: ${CCXT_API_KEYS}
+    rate_limit: 1200
+    timeout: 30000
+    enable_rate_limit: true
+    options: {}
+
+data_providers:
+  twelve_data_api_key: "${TWELVE_DATA_API_KEY}"
+  alpha_vantage_api_key: "${ALPHA_VANTAGE_API_KEY}"
+  polygon_api_key: "${POLYGON_API_KEY}"
+  finnhub_api_key: "${FINNHUB_API_KEY}"
+
+strategy:
+  ml_models_path: "/models"
+  feature_lookback: 200
+  prediction_horizon: 20
+  ensemble_method: "stacking"
+  min_confidence: 0.65
+  max_concurrent_signals: 20
+  signal_expiry_seconds: 600
+
+risk:
+  max_portfolio_risk: 0.015
+  max_drawdown: 0.08
+  max_correlation: 0.65
+  max_leverage: 5.0
+  var_confidence: 0.99
+  var_horizon_days: 1
+  max_position_size_pct: 0.08
+  max_sector_exposure: 0.25
+  stop_out_level: 0.30
+  margin_call_level: 0.60
+  daily_loss_limit: 0.03
+  weekly_loss_limit: 0.06
+  monthly_loss_limit: 0.12
+
+execution:
+  default_algorithm: "adaptive"
+  max_slippage_bps: 3
+  partial_fill_timeout: 20
+  max_order_age_seconds: 180
+  retry_attempts: 3
+  retry_delay_seconds: 1
+  use_smart_routing: true
+  min_order_size: 0.01
+  max_order_size: 50.0
+
+backtest:
+  initial_capital: 100000.0
+  commission_per_lot: 5.0
+  spread_bps: 5
+  slippage_bps: 1
+  max_positions: 30
+  allow_short: true
+  margin_requirement: 0.01
+
+monitoring:
+  prometheus_port: 9090
+  grafana_dashboard: "forex-trading-prod"
+  alert_webhook_telegram: "${TELEGRAM_WEBHOOK}"
+  alert_webhook_discord: "${DISCORD_WEBHOOK}"
+  alert_webhook_email: "${EMAIL_WEBHOOK}"
+  health_check_interval: 15
+
+dashboard:
+  host: "0.0.0.0"
+  port: 8501
+  theme: "dark"
+  auto_refresh_seconds: 3
+
+secrets:
+  secret_key: "${SECRET_KEY}"
+  jwt_algorithm: "HS256"
+  jwt_expiration_minutes: 30
+  api_key_header: "X-API-Key"

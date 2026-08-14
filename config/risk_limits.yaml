@@ -1,0 +1,92 @@
+# Risk Engine Configuration
+# All values are HARD LIMITS - never exceeded
+
+hard_limits:
+  # Portfolio-level limits
+  max_portfolio_drawdown: 0.05          # 5% daily max drawdown
+  max_portfolio_drawdown_weekly: 0.10   # 10% weekly
+  max_portfolio_drawdown_monthly: 0.15  # 15% monthly
+  
+  # Strategy-level limits
+  max_strategy_drawdown: 0.03           # 3% per strategy
+  max_strategy_drawdown_weekly: 0.06    # 6% weekly per strategy
+  
+  # Position limits
+  max_single_position: 0.10             # 10% of portfolio per position
+  max_correlated_positions: 0.25        # 25% in correlated assets
+  max_sector_exposure: 0.30             # 30% per sector
+  max_leverage: 3.0                     # 3x max gross leverage
+  max_net_leverage: 1.5                 # 1.5x max net leverage
+  
+  # Risk metrics
+  var_95_1d: 0.02                       # 2% daily VaR at 95%
+  var_99_1d: 0.03                       # 3% daily VaR at 99%
+  max_expected_shortfall: 0.04          # 4% expected shortfall
+  
+  # Order limits
+  max_open_orders: 50
+  max_orders_per_second: 10
+  max_order_size_pct_adv: 0.05          # 5% of average daily volume
+  
+  # Liquidity
+  min_liquidity_score: 0.3              # Minimum liquidity for new positions
+  emergency_liquidation_threshold: 0.08 # 8% drawdown triggers emergency
+  
+  # Correlation
+  max_correlation_cluster: 0.7          # Max correlation within cluster
+  correlation_lookback_days: 60
+  
+  # Drawdown recovery
+  drawdown_recovery_factor: 0.5         # Reduce risk by 50% after 3% DD
+  drawdown_recovery_steps: 4            # Steps to recover full risk
+
+circuit_breakers:
+  # Auto-triggered actions
+  portfolio_dd_5pct:
+    trigger: "portfolio_drawdown >= 0.05"
+    action: "reduce_all_positions_50pct"
+    cooldown_hours: 4
+    
+  portfolio_dd_8pct:
+    trigger: "portfolio_drawdown >= 0.08"
+    action: "liquidate_all_positions"
+    cooldown_hours: 24
+    requires_manual_reset: true
+    
+  strategy_dd_3pct:
+    trigger: "strategy_drawdown >= 0.03"
+    action: "pause_strategy"
+    cooldown_hours: 2
+    
+  var_breach:
+    trigger: "var_95 > 0.025"
+    action: "reduce_leverage_25pct"
+    cooldown_hours: 2
+    
+  correlation_spike:
+    trigger: "max_correlation > 0.85"
+    action: "reduce_correlated_cluster"
+    cooldown_hours: 4
+    
+  execution_failure_rate:
+    trigger: "fill_rate < 0.80 over 100 orders"
+    action: "pause_execution_engine"
+    cooldown_hours: 1
+    
+  data_quality:
+    trigger: "missing_ticks > 5% over 1min"
+    action: "switch_data_source"
+    cooldown_hours: 0.5
+
+monitoring:
+  heartbeat_interval_seconds: 30
+  metrics_retention_days: 90
+  alert_channels:
+    - type: "telegram"
+      severity: ["warning", "critical"]
+    - type: "email"
+      severity: ["critical"]
+    - type: "pagerduty"
+      severity: ["critical"]
+  auto_recovery_enabled: true
+  max_auto_recoveries_per_hour: 3

@@ -1,0 +1,163 @@
+1. src/ai/agents.py:11:25 [F401] `collections.defaultdict` imported but unused
+2. src/ai/agents.py:13:37 [F401] `datetime.timedelta` imported but unused
+3. src/ai/custom_llm.py:10:8 [F401] `json` imported but unused
+4. src/ai/custom_llm.py:12:8 [F401] `os` imported but unused
+5. src/ai/custom_llm.py:14:8 [F401] `time` imported but unused
+6. src/ai/custom_llm.py:16:36 [F401] `dataclasses.field` imported but unused
+7. src/ai/custom_llm.py:17:37 [F401] `datetime.timedelta` imported but unused
+8. src/ai/custom_llm.py:30:55 [F401] `torch.utils.data.TensorDataset` imported but unused; consider using `importlib.util.find_spec` to test for availability
+9. src/ai/custom_llm.py:38:12 [F401] `sentence_transformers` imported but unused; consider using `importlib.util.find_spec` to test for availability
+10. src/ai/custom_llm.py:50:12 [F401] `faiss` imported but unused; consider using `importlib.util.find_spec` to test for availability
+11. src/ai/custom_llm.py:1009:12 [F401] `sys` imported but unused
+12. src/ai/custom_llm.py:1051:11 [F541] f-string without any placeholders
+13. src/ai/custom_llm.py:1057:11 [F541] f-string without any placeholders
+14. src/ai/local_llm.py:8:8 [F401] `asyncio` imported but unused
+15. src/ai/local_llm.py:11:8 [F401] `uuid` imported but unused
+16. src/analytics/options/engine.py:8:8 [F401] `asyncio` imported but unused
+17. src/analytics/options/engine.py:13:37 [F401] `datetime.timedelta` imported but unused
+18. src/analytics/options/engine.py:17:17 [F401] `numpy` imported but unused
+19. src/analytics/options/engine.py:18:18 [F401] `pandas` imported but unused
+20. src/analytics/tca.py:8:8 [F401] `asyncio` imported but unused
+21. src/analytics/tca.py:10:8 [F401] `uuid` imported but unused
+22. src/analytics/tca.py:19:19 [F401] `scipy.stats` imported but unused
+23. src/api/main.py:663:11 [F811] Redefinition of unused `trigger_model_retrain` from line 608: `trigger_model_retrain` redefined here
+24. src/api/main.py:675:11 [F811] Redefinition of unused `get_blind_spot_alerts` from line 620: `get_blind_spot_alerts` redefined here
+25. src/api/main.py:689:11 [F811] Redefinition of unused `get_blind_spot_summary` from line 634: `get_blind_spot_summary` redefined here
+26. src/api/main.py:698:11 [F811] Redefinition of unused `get_factor_analysis` from line 643: `get_factor_analysis` redefined here
+27. src/api/main.py:709:11 [F811] Redefinition of unused `get_correlation_clusters` from line 654: `get_correlation_clusters` redefined here
+28. src/api/main.py:718:11 [F811] Redefinition of unused `trigger_model_retrain` from line 663: `trigger_model_retrain` redefined here
+29. src/api/main.py:730:11 [F811] Redefinition of unused `get_blind_spot_alerts` from line 675: `get_blind_spot_alerts` redefined here
+30. src/api/main.py:744:11 [F811] Redefinition of unused `get_blind_spot_summary` from line 689: `get_blind_spot_summary` redefined here
+31. src/api/main.py:753:11 [F811] Redefinition of unused `get_factor_analysis` from line 698: `get_factor_analysis` redefined here
+32. src/api/main.py:764:11 [F811] Redefinition of unused `get_correlation_clusters` from line 709: `get_correlation_clusters` redefined here
+33. src/api/main.py:773:11 [F811] Redefinition of unused `trigger_model_retrain` from line 718: `trigger_model_retrain` redefined here
+34. src/api/main.py:785:11 [F811] Redefinition of unused `get_blind_spot_alerts` from line 730: `get_blind_spot_alerts` redefined here
+35. src/api/main.py:799:11 [F811] Redefinition of unused `get_blind_spot_summary` from line 744: `get_blind_spot_summary` redefined here
+36. src/api/main.py:808:11 [F811] Redefinition of unused `get_factor_analysis` from line 753: `get_factor_analysis` redefined here
+37. src/api/main.py:819:11 [F811] Redefinition of unused `get_correlation_clusters` from line 764: `get_correlation_clusters` redefined here
+38. src/api/main.py:828:11 [F811] Redefinition of unused `trigger_model_retrain` from line 773: `trigger_model_retrain` redefined here
+39. src/api/main.py:840:11 [F811] Redefinition of unused `get_blind_spot_alerts` from line 785: `get_blind_spot_alerts` redefined here
+40. src/api/main.py:854:11 [F811] Redefinition of unused `get_blind_spot_summary` from line 799: `get_blind_spot_summary` redefined here
+41. src/api/main.py:863:11 [F811] Redefinition of unused `get_factor_analysis` from line 808: `get_factor_analysis` redefined here
+42. src/api/main.py:874:11 [F811] Redefinition of unused `get_correlation_clusters` from line 819: `get_correlation_clusters` redefined here
+43. src/autonomous_main.py:27:39 [F401] `src.infra.config.settings.settings` imported but unused
+44. src/autonomous_main.py:427:20 [F821] Undefined name `AnalysisType`
+45. src/autonomous_main.py:428:37 [F821] Undefined name `AnalysisType`
+46. src/autonomous_main.py:446:16 [F821] Undefined name `np`
+47. src/autonomous_main.py:458:16 [F821] Undefined name `np`
+48. src/autonomous_main.py:470:16 [F821] Undefined name `np`
+49. src/autonomous_main.py:520:101 [F821] Undefined name `timedelta`
+50. src/backtesting/walkforward.py:8:8 [F401] `asyncio` imported but unused
+51. src/backtesting/walkforward.py:14:22 [F401] `datetime.UTC` imported but unused
+52. src/backtesting/walkforward.py:666:5 [F841] Local variable `atr_period` is assigned to but never used
+53. src/backtesting/walkforward.py:667:5 [F841] Local variable `atr_mult` is assigned to but never used
+54. src/dashboard/app.py:14:37 [F811] Redefinition of unused `time` from line 12: `time` redefined here
+55. src/dashboard/app.py:515:5 [F841] Local variable `active_sessions` is assigned to but never used
+56. src/dashboard/app.py:723:5 [F841] Local variable `balance` is assigned to but never used
+57. src/dashboard/app.py:726:5 [F841] Local variable `margin` is assigned to but never used
+58. src/dashboard/auth.py:26:36 [F401] `dataclasses.field` imported but unused
+59. src/dashboard/auth.py:332:21 [F541] f-string without any placeholders
+60. src/dashboard/auth.py:333:21 [F541] f-string without any placeholders
+61. src/dashboard/bloomberg_adapter.py:14:17 [F401] `numpy` imported but unused
+62. src/dashboard/bloomberg_adapter.py:15:18 [F401] `pandas` imported but unused
+63. src/dashboard/native_dashboard.py:1527:23 [invalid-syntax] f-string: unterminated string
+64. src/dashboard/native_dashboard.py:1527:28 [invalid-syntax] Expected FStringEnd, found newline
+65. src/dashboard/native_launcher.py:7:8 [F401] `os` imported but unused
+66. src/dashboard/native_launcher.py:14:16 [F401] `PyQt6` imported but unused; consider using `importlib.util.find_spec` to test for availability
+67. src/dashboard/native_launcher.py:24:11 [F821] Undefined name `QApplication`
+68. src/dashboard/native_launcher.py:26:5 [F821] Undefined name `asyncio`
+69. src/dashboard/tabs/ai_config.py:7:20 [F401] `typing.Any` imported but unused
+70. src/dashboard/tabs/anr_recommend.py:6:26 [F401] `plotly.express` imported but unused
+71. src/dashboard/tabs/anr_recommend.py:41:22 [F821] Undefined name `header_template`
+72. src/dashboard/tabs/anr_recommend.py:71:5 [F841] Local variable `prompt` is assigned to but never used
+73. src/dashboard/tabs/broker_config.py:7:20 [F401] `typing.Any` imported but unused
+74. src/dashboard/tabs/credentials.py:16:20 [F401] `typing.Any` imported but unused
+75. src/dashboard/tabs/credentials.py:235:9 [F841] Local variable `require_2fa_admin` is assigned to but never used
+76. src/dashboard/tabs/credentials.py:238:9 [F841] Local variable `single_session` is assigned to but never used
+77. src/dashboard/tabs/credentials.py:265:5 [F841] Local variable `new_token_scopes` is assigned to but never used
+78. src/dashboard/tabs/data_ingestion.py:140:21 [F821] Undefined name `DataProvider`
+79. src/dashboard/tabs/des_security.py:17:8 [F401] `random` imported but unused
+80. src/dashboard/tabs/des_security.py:20:20 [F401] `typing.Any` imported but unused
+81. src/dashboard/tabs/econ_calendar.py:6:26 [F401] `plotly.express` imported but unused
+82. src/dashboard/tabs/econ_calendar.py:32:22 [F821] Undefined name `header_template`
+83. src/dashboard/tabs/emsx_routing.py:23:22 [F821] Undefined name `header_template`
+84. src/dashboard/tabs/emsx_routing.py:34:5 [F841] Local variable `algorithm` is assigned to but never used
+85. src/dashboard/tabs/emsx_routing.py:35:5 [F841] Local variable `slicing_period` is assigned to but never used
+86. src/dashboard/tabs/emsx_routing.py:36:5 [F841] Local variable `max_child_pct` is assigned to but never used
+87. src/dashboard/tabs/emsx_routing.py:37:5 [F841] Local variable `randomize` is assigned to but never used
+88. src/dashboard/tabs/emsx_routing.py:38:5 [F841] Local variable `min_fill` is assigned to but never used
+89. src/dashboard/tabs/execution_logger.py:14:20 [F401] `typing.Any` imported but unused
+90. src/dashboard/tabs/feat_store.py:18:20 [F401] `typing.Any` imported but unused
+91. src/dashboard/tabs/feat_store.py:20:17 [F401] `numpy` imported but unused
+92. src/dashboard/tabs/help.py:224:14 [F823] Local variable `pd` referenced before assignment
+93. src/dashboard/tabs/help.py:610:30 [F821] Undefined name `SHORTCUT_MAP`
+94. src/dashboard/tabs/log_exec.py:17:20 [F401] `typing.Any` imported but unused
+95. src/dashboard/tabs/main_scan.py:5:8 [F401] `time` imported but unused
+96. src/dashboard/tabs/main_scan.py:6:22 [F401] `datetime.datetime` imported but unused
+97. src/dashboard/tabs/main_scan.py:51:22 [F821] Undefined name `header_template`
+98. src/dashboard/tabs/mon_health.py:19:20 [F401] `typing.Any` imported but unused
+99. src/dashboard/tabs/news_feed.py:4:17 [F401] `numpy` imported but unused
+100. src/dashboard/tabs/news_feed.py:30:22 [F821] Undefined name `header_template`
+101. src/dashboard/tabs/ord_book.py:19:20 [F401] `typing.Any` imported but unused
+102. src/dashboard/tabs/order_manager.py:16:20 [F401] `typing.Any` imported but unused
+103. src/dashboard/tabs/pf_portfolio.py:18:20 [F401] `typing.Any` imported but unused
+104. src/dashboard/tabs/pf_portfolio.py:57:5 [F841] Local variable `now` is assigned to but never used
+105. src/dashboard/tabs/portfolio.py:11:22 [F401] `datetime.datetime` imported but unused
+106. src/dashboard/tabs/portfolio.py:11:32 [F401] `datetime.timezone` imported but unused
+107. src/dashboard/tabs/portfolio.py:12:20 [F401] `typing.Any` imported but unused
+108. src/dashboard/tabs/price_chart.py:6:32 [F401] `datetime.timedelta` imported but unused
+109. src/dashboard/tabs/price_chart.py:26:22 [F821] Undefined name `header_template`
+110. src/dashboard/tabs/risk_circuit.py:18:37 [F401] `datetime.timedelta` imported but unused
+111. src/dashboard/tabs/risk_circuit.py:19:20 [F401] `typing.Any` imported but unused
+112. src/dashboard/tabs/risk_circuit.py:36:36 [F401] `plotly.graph_objects` imported but unused
+113. src/dashboard/tabs/risk_circuit.py:169:5 [F841] Local variable `cols` is assigned to but never used
+114. src/dashboard/tabs/sec_auth.py:19:20 [F401] `typing.Any` imported but unused
+115. src/dashboard/tabs/security.py:8:20 [F401] `typing.Any` imported but unused
+116. src/dashboard/tabs/security.py:95:5 [F841] Local variable `enrolled` is assigned to but never used
+117. src/dashboard/tabs/sentiment_deep.py:6:26 [F401] `plotly.express` imported but unused
+118. src/dashboard/tabs/sentiment_deep.py:21:22 [F821] Undefined name `header_template`
+119. src/dashboard/tabs/session_timeline.py:4:17 [F401] `numpy` imported but unused
+120. src/dashboard/tabs/session_timeline.py:18:22 [F821] Undefined name `header_template`
+121. src/dashboard/tabs/stock_predictor.py:21:20 [F401] `typing.Any` imported but unused
+122. src/dashboard/tabs/stock_predictor.py:280:5 [F841] Local variable `latest` is assigned to but never used
+123. src/dashboard/tabs/stock_predictor.py:308:5 [F841] Local variable `rsi_val` is assigned to but never used
+124. src/dashboard/tabs/stock_predictor.py:322:5 [F841] Local variable `atr_val` is assigned to but never used
+125. src/dashboard/tabs/stock_predictor.py:323:5 [F841] Local variable `adx_val` is assigned to but never used
+126. src/dashboard/tabs/strat_voting.py:18:20 [F401] `typing.Any` imported but unused
+127. src/dashboard/tabs/strat_voting.py:79:9 [F841] Local variable `total` is assigned to but never used
+128. src/dashboard/tabs/watchlist.py:7:22 [F401] `datetime.datetime` imported but unused
+129. src/dashboard/tabs/watchlist.py:7:32 [F401] `datetime.timezone` imported but unused
+130. src/dashboard/tabs/watchlist.py:8:20 [F401] `typing.Any` imported but unused
+131. src/dashboard/tabs/world_indices.py:48:22 [F821] Undefined name `header_template`
+132. src/dashboard/tabs/yield_analytics.py:42:22 [F821] Undefined name `header_template`
+133. src/data/alternative.py:12:8 [F401] `uuid` imported but unused
+134. src/data/alternative.py:998:26 [F821] Undefined name `np`
+135. src/data/alternative.py:999:28 [F821] Undefined name `np`
+136. src/data/unified_vendor.py:14:37 [F401] `datetime.timedelta` imported but unused
+137. src/data/unified_vendor.py:107:37 [F821] Undefined name `Callable`
+138. src/data/unified_vendor.py:154:44 [F821] Undefined name `Callable`
+139. src/data/unified_vendor.py:516:40 [F821] Undefined name `deque`
+140. src/data/unified_vendor.py:516:69 [F821] Undefined name `deque`
+141. src/data/unified_vendor.py:519:28 [F821] Undefined name `Callable`
+142. src/data/unified_vendor.py:520:44 [F821] Undefined name `Callable`
+143. src/data/unified_vendor.py:576:23 [F821] Undefined name `np`
+144. src/data/unified_vendor.py:667:23 [F821] Undefined name `np`
+145. src/execution/dom.py:8:8 [F401] `asyncio` imported but unused
+146. src/execution/dom.py:10:8 [F401] `random` imported but unused
+147. src/execution/dom.py:11:8 [F401] `time` imported but unused
+148. src/execution/dom.py:18:17 [F401] `numpy` imported but unused
+149. src/execution/dom.py:485:17 [F541] f-string without any placeholders
+150. src/execution/dom.py:530:13 [F841] Local variable `total_vol` is assigned to but never used
+151. src/execution/router.py:8:8 [F401] `asyncio` imported but unused
+152. src/execution/router.py:14:37 [F401] `datetime.timedelta` imported but unused
+153. src/strategies/comprehensive_strategies_part4.py:12:17 [F401] `numpy` imported but unused
+154. src/strategies/comprehensive_strategies_part4.py:14:49 [F401] `src.data.models.SignalType` imported but unused
+155. src/strategies/comprehensive_strategies_part4.py:22:47 [F401] `src.strategy.technical.indicators.TechnicalIndicators` imported but unused
+156. src/strategy/strategies.py:225:9 [F811] Redefinition of unused `get_required_indicators` from line 66: `get_required_indicators` redefined here
+157. src/strategy/strategies.py:479:9 [F811] Redefinition of unused `get_required_indicators` from line 276: `get_required_indicators` redefined here
+158. src/strategy/strategies.py:630:9 [F811] Redefinition of unused `get_required_indicators` from line 523: `get_required_indicators` redefined here
+159. src/strategy/strategies.py:960:9 [F811] Redefinition of unused `get_required_indicators` from line 698: `get_required_indicators` redefined here
+160. src/strategy/technical/advanced_indicators.py:12:18 [F401] `pandas` imported but unused
+161. src/strategy/technical/advanced_indicators.py:132:17 [F841] Local variable `end` is assigned to but never used
+162. src/strategy/technical/advanced_indicators.py:328:13 [F841] Local variable `den` is assigned to but never used
+163. src/trading/paper_trading.py:23:1 [F811] Redefinition of unused `logger` from line 16: `logger` redefined here

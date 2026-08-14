@@ -1,0 +1,210 @@
+#!/usr/bin/env bash
+# ============================================================
+# Forex Trading System - Universal Launcher
+# ============================================================
+# Single command: ./forex install | start | stop | status
+# ============================================================
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$SCRIPT_DIR"
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+
+log() { echo -e "${CYAN}[$(date +%H:%M:%S)]${NC} $*"; }
+success() { echo -e "${GREEN}[$(date +%H:%M:%S)]${NC} $*"; }
+warn() { echo -e "${YELLOW}[$(date +%H:%M:%S)]${NC} $*"; }
+error() { echo -e "${RED}[$(date +%H:%M:%S)]${NC} $*"; }
+
+usage() {
+    cat <<EOF
+Forex Trading System - Universal Launcher
+
+USAGE:
+    ./forex <command>
+
+COMMANDS:
+    install     Install all infrastructure (PostgreSQL, Redis, InfluxDB, NATS, Prometheus, Grafana)
+    start       Start entire system (infrastructure + API + Dashboard)
+    stop        Stop all services
+    restart     Restart entire system
+    status      Show system status
+    api         Start only API server
+    dashboard   Start only Dashboard
+    worker      Start strategy/worker processes
+    logs        Show recent logs
+
+EXAMPLES:
+    ./forex install      # One-time setup
+    ./forex start        # Start everything
+    ./forex status       # Check what's running
+    ./forex stop         # Stop everything
+EOF
+}
+
+check_port() {
+    local port=$1
+    (timeout 1 bash -c "cat < /dev/null > /dev/tcp/localhost/$port" 2>/dev/null) && return 0 || return 1
+}
+
+wait_for_service() {
+    local name=$1 port=$2 timeout=${3:-60}
+    log "Waiting for $name on port $port..."
+    for i in $(seq 1 $timeout); do
+        if check_port $port; then
+            success "$name ready on port $port"
+            return 0
+        fi
+        sleep 1
+    done
+    error "$name failed to start on port $port"
+    return 1
+}
+
+install_infrastructure() {
+    log "Installing infrastructure via Scoop..."
+    powershell.exe -Command "
+        Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+        if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
+            irm get.scoop.sh | iex
+        }
+        scoop bucket add extras
+        scoop install postgresql redis influxdb nats-server prometheus grafana
+        scoop hold postgresql redis influxdb nats-server prometheus grafana
+    "
+    success "Infrastructure installed"
+}
+
+start_infrastructure() {
+    log "Starting infrastructure services..."
+    powershell.exe -Command "
+        \$services = @('postgresql','redis','influxdb','nats-server','prometheus','grafana')
+        foreach (\$s in \$services) {
+            Start-Process scoop -ArgumentList 'run', \$s -WindowStyle Hidden
+        }
+    "
+    wait_for_service "PostgreSQL" 5432
+    wait_for_service "Redis" 6379
+    wait_for_service "InfluxDB" 8086
+    wait_for_service "NATS" 4222
+    wait_for_service "Prometheus" 9090
+    wait_for_service "Grafana" 3000
+    success "All infrastructure services running"
+}
+
+start_api() {
+    log "Starting API server..."
+    cd "$PROJECT_DIR"
+    poetry run python -m src.api.main &
+    wait_for_service "API" 8000
+    success "API running on http://localhost:8000"
+}
+
+start_dashboard() {
+    log "Starting Dashboard..."
+    cd "$PROJECT_DIR"
+    poetry run streamlit run src/portfolio/dashboard/app.py --server.port 8501 --server.address 0.0.0.0 &
+    wait_for_service "Dashboard" 8501
+    success "Dashboard running on http://localhost:8501"
+}
+
+stop_all() {
+    log "Stopping all services..."
+    powershell.exe -Command "
+        \$services = @('postgresql','redis','influxdb','nats-server','prometheus','grafana')
+        foreach (\$s in \$services) {
+            Get-Process -Name \$s -ErrorAction SilentlyContinue | Stop-Process -Force
+        }
+    "
+    pkill -f "src.api.main" 2>/dev/null || true
+    pkill -f "streamlit" 2>/dev/null || true
+    success "All services stopped"
+}
+
+show_status() {
+    echo -e "\n${CYAN}=== FOREX TRADING SYSTEM STATUS ===${NC}"
+    echo -e "\n${CYAN}Infrastructure:${NC}"
+    for svc in "PostgreSQL:5432" "Redis:6379" "InfluxDB:8086" "NATS:4222" "Prometheus:9090" "Grafana:3000"; do
+        name="${svc%:*}"; port="${svc#*:}"
+        if check_port $port; then
+            echo -e "  ${GREEN}●${NC} $name (port $port)"
+        else
+            echo -e "  ${RED}●${NC} $name (port $port)"
+        fi
+    done
+    echo -e "\n${CYAN}Application:${NC}"
+    for svc in "API:8000" "Dashboard:8501"; do
+        name="${svc%:*}"; port="${svc#*:}"
+        if check_port $port; then
+            echo -e "  ${GREEN}●${NC} $name (port $port)"
+        else
+            echo -e "  ${RED}●${NC} $name (port $port)"
+        fi
+    done
+    echo -e "\n${CYAN}Access URLs:${NC}"
+    echo "  API Docs:       http://localhost:8000/docs"
+    echo "  Dashboard:      http://localhost:8501"
+    echo "  Prometheus:     http://localhost:9090"
+    echo "  Grafana:        http://localhost:3000 (admin/admin)"
+    echo "  InfluxDB:       http://localhost:8086"
+    echo "  NATS Monitor:   http://localhost:8222"
+}
+
+# ============================================================
+# MAIN
+# ============================================================
+cd "$PROJECT_DIR"
+
+case "${1:-}" in
+    install)
+        install_infrastructure
+        ;;
+    start)
+        start_infrastructure
+        start_api
+        start_dashboard
+        show_status
+        ;;
+    stop)
+        stop_all
+        ;;
+    restart)
+        stop_all
+        sleep 2
+        start_infrastructure
+        start_api
+        start_dashboard
+        show_status
+        ;;
+    status)
+        show_status
+        ;;
+    api)
+        start_api
+        ;;
+    dashboard)
+        start_dashboard
+        ;;
+    worker)
+        log "Starting workers..."
+        cd "$PROJECT_DIR"
+        poetry run python -m src.strategy.runner &
+        poetry run python -m src.risk.runner &
+        poetry run python -m src.execution.runner &
+        poetry run python -m src.data.runner &
+        success "Workers started"
+        ;;
+    logs)
+        tail -f logs/*.log 2>/dev/null || echo "No logs found"
+        ;;
+    *)
+        usage
+        exit 1
+        ;;
+esac

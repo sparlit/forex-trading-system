@@ -1,0 +1,146 @@
+app:
+  name: "forex-trading-system"
+  environment: "development"
+  debug: true
+  log_level: "DEBUG"
+  log_format: "console"
+
+api:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 1
+  reload: true
+  prefix: "/api/v1"
+  cors_origins: ["*"]
+
+database:
+  timescale:
+    host: "localhost"
+    port: 5432
+    database: "market_data"
+    user: "trader"
+    password: ""
+    pool_size: 10
+    max_overflow: 5
+    ssl_mode: "prefer"
+
+  redis:
+    host: "localhost"
+    port: 6379
+    db: 0
+    password: null
+    ssl: false
+    max_connections: 50
+    decode_responses: true
+
+  influx:
+    url: "http://localhost:8086"
+    token: ""
+    org: "trading"
+    bucket: "metrics"
+    timeout: 10000
+
+messaging:
+  nats:
+    servers: ["nats://localhost:4222"]
+    name: "forex-trading-system"
+    max_reconnect_attempts: -1
+    reconnect_time_wait: 2
+
+brokers:
+  mt5:
+    enabled: true
+    login: 0
+    password: ""
+    server: ""
+    path: ""
+    timeout: 60000
+    portable: false
+
+  ctrader:
+    enabled: false
+    client_id: ""
+    client_secret: ""
+    access_token: ""
+    refresh_token: ""
+    host: "demo.ctraderapi.com"
+    port: 443
+
+  ccxt:
+    enabled: true
+    exchanges: ["binance", "bybit", "kraken"]
+    api_keys: {}
+    rate_limit: 1200
+    timeout: 30000
+    enable_rate_limit: true
+    options: {}
+
+data_providers:
+  twelve_data_api_key: ""
+  alpha_vantage_api_key: ""
+  polygon_api_key: ""
+  finnhub_api_key: ""
+
+strategy:
+  ml_models_path: "./models"
+  feature_lookback: 100
+  prediction_horizon: 10
+  ensemble_method: "weighted_average"
+  min_confidence: 0.6
+  max_concurrent_signals: 10
+  signal_expiry_seconds: 300
+
+risk:
+  max_portfolio_risk: 0.02
+  max_drawdown: 0.10
+  max_correlation: 0.7
+  max_leverage: 10.0
+  var_confidence: 0.99
+  var_horizon_days: 1
+  max_position_size_pct: 0.10
+  max_sector_exposure: 0.30
+  stop_out_level: 0.50
+  margin_call_level: 0.80
+  daily_loss_limit: 0.05
+  weekly_loss_limit: 0.10
+  monthly_loss_limit: 0.20
+
+execution:
+  default_algorithm: "adaptive"
+  max_slippage_bps: 5
+  partial_fill_timeout: 30
+  max_order_age_seconds: 300
+  retry_attempts: 3
+  retry_delay_seconds: 1
+  use_smart_routing: true
+  min_order_size: 0.01
+  max_order_size: 100.0
+
+backtest:
+  initial_capital: 100000.0
+  commission_per_lot: 7.0
+  spread_bps: 10
+  slippage_bps: 2
+  max_positions: 20
+  allow_short: true
+  margin_requirement: 0.01
+
+monitoring:
+  prometheus_port: 9090
+  grafana_dashboard: "forex-trading"
+  alert_webhook_telegram: ""
+  alert_webhook_discord: ""
+  alert_webhook_email: ""
+  health_check_interval: 30
+
+dashboard:
+  host: "0.0.0.0"
+  port: 8501
+  theme: "dark"
+  auto_refresh_seconds: 5
+
+secrets:
+  secret_key: "dev-secret-change-in-production"
+  jwt_algorithm: "HS256"
+  jwt_expiration_minutes: 60
+  api_key_header: "X-API-Key"

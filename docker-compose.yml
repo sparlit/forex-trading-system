@@ -1,0 +1,301 @@
+# Docker Compose for Forex Trading System
+# Development environment with all services
+
+services:
+  # TimescaleDB - Primary time-series database
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    container_name: forex-timescaledb
+    environment:
+      POSTGRES_DB: market_data
+      POSTGRES_USER: trader
+      POSTGRES_PASSWORD: ${TIMESCALE_PASSWORD:-changeme}
+    volumes:
+      - timescale_data:/var/lib/postgresql/data
+      - ./scripts/init-timescaledb.sql:/docker-entrypoint-initdb.d/init-timescaledb.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trader -d market_data"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - forex-network
+
+  # Redis - Caching & real-time data
+  redis:
+    image: redis:7-alpine
+    container_name: forex-redis
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - forex-network
+
+  # InfluxDB - Metrics & monitoring
+  influxdb:
+    image: influxdb:2.7
+    container_name: forex-influxdb
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: admin
+      DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUX_PASSWORD:-changeme}
+      DOCKER_INFLUXDB_INIT_ORG: trading
+      DOCKER_INFLUXDB_INIT_BUCKET: metrics
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUX_TOKEN:-my-super-secret-admin-token}
+    volumes:
+      - influx_data:/var/lib/influxdb2
+      - influx_config:/etc/influxdb2
+    ports:
+      - "8086:8086"
+    healthcheck:
+      test: ["CMD", "influx", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - forex-network
+
+  # NATS - Message bus for event-driven architecture
+  nats:
+    image: nats:2.10-alpine
+    container_name: forex-nats
+    command: ["-js", "-m", "8222"]
+    ports:
+      - "4222:4222"  # Client connections
+      - "8222:8222"  # Monitoring
+    volumes:
+      - nats_data:/data
+    healthcheck:
+      test: ["CMD", "nats", "server", "check", "jetstream"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - forex-network
+
+  # Main API Service
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: forex-api
+    command: python -m src.api.main
+    environment:
+      - ENV=development
+      - PYTHONPATH=/app
+    env_file:
+      - .env
+    volumes:
+      - ./src:/app/src:ro
+      - ./config:/app/config:ro
+      - ./models:/app/models
+      - ./logs:/app/logs
+    ports:
+      - "8000:8000"
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      influxdb:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    networks:
+      - forex-network
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 512M
+
+  # Dashboard Service
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: forex-dashboard
+    command: streamlit run src/portfolio/dashboard/app.py --server.port=8501 --server.address=0.0.0.0
+    environment:
+      - ENV=development
+      - PYTHONPATH=/app
+    env_file:
+      - .env
+    volumes:
+      - ./src:/app/src:ro
+      - ./config:/app/config:ro
+    ports:
+      - "8501:8501"
+    depends_on:
+      - api
+    networks:
+      - forex-network
+
+  # Strategy Worker - Runs strategy engine
+  worker-strategy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    # container_name removed to allow replicas
+    command: python -m src.strategy.runner
+    environment:
+      - ENV=development
+      - PYTHONPATH=/app
+      - WORKER_TYPE=strategy
+    env_file:
+      - .env
+    volumes:
+      - ./src:/app/src:ro
+      - ./config:/app/config:ro
+      - ./models:/app/models
+    depends_on:
+      nats:
+        condition: service_healthy
+      timescaledb:
+        condition: service_healthy
+    networks:
+      - forex-network
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 1G
+
+  # Risk Worker - Risk management
+  worker-risk:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: forex-worker-risk
+    command: python -m src.risk.runner
+    environment:
+      - ENV=development
+      - PYTHONPATH=/app
+      - WORKER_TYPE=risk
+    env_file:
+      - .env
+    volumes:
+      - ./src:/app/src:ro
+      - ./config:/app/config:ro
+    depends_on:
+      nats:
+        condition: service_healthy
+    networks:
+      - forex-network
+
+  # Execution Worker - Order execution
+  worker-execution:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: forex-worker-execution
+    command: python -m src.execution.runner
+    environment:
+      - ENV=development
+      - PYTHONPATH=/app
+      - WORKER_TYPE=execution
+    env_file:
+      - .env
+    volumes:
+      - ./src:/app/src:ro
+      - ./config:/app/config:ro
+    depends_on:
+      nats:
+        condition: service_healthy
+    networks:
+      - forex-network
+
+  # Data Ingestion Worker - Market data collection
+  worker-data:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: forex-worker-data
+    command: python -m src.data.runner
+    environment:
+      - ENV=development
+      - PYTHONPATH=/app
+      - WORKER_TYPE=data
+    env_file:
+      - .env
+    volumes:
+      - ./src:/app/src:ro
+      - ./config:/app/config:ro
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    networks:
+      - forex-network
+
+  # Prometheus - Metrics collection
+  prometheus:
+    image: prom/prometheus:v2.50.0
+    container_name: forex-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - forex-network
+
+  # Grafana - Visualization
+  grafana:
+    image: grafana/grafana:10.3.0
+    container_name: forex-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_INSTALL_PLUGINS: grafana-piechart-panel
+    volumes:
+      - ./config/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./config/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - forex-network
+
+volumes:
+  timescale_data:
+  redis_data:
+  influx_data:
+  influx_config:
+  nats_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  forex-network:
+    driver: bridge

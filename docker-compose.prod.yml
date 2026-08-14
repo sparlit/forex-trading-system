@@ -1,0 +1,493 @@
+# Docker Compose Production Override
+# Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml -p forex up -d
+
+services:
+  # ============================================
+  # API SERVICE - PRODUCTION
+  # ============================================
+  api:
+    build:
+      target: production
+    container_name: forex-api
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: '2.0'
+        reservations:
+          memory: 1G
+          cpus: '1.0'
+    environment:
+      - ENV=production
+      - DEBUG=false
+      - LOG_LEVEL=INFO
+      - LOG_FORMAT=json
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+    secrets:
+      - timescale_password
+      - influx_token
+      - secret_key
+      - jwt_secret
+    networks:
+      - forex-network
+
+  # ============================================
+  # DASHBOARD - PRODUCTION
+  # ============================================
+  dashboard:
+    build:
+      target: production
+    container_name: forex-dashboard
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 512M
+    environment:
+      - ENV=production
+      - DEBUG=false
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - forex-network
+
+  # ============================================
+  # WORKER SERVICES - PRODUCTION (SCALED)
+  # ============================================
+  worker-strategy:
+    build:
+      target: production
+    deploy:
+      replicas: 4
+      resources:
+        limits:
+          memory: 4G
+          cpus: '2.0'
+        reservations:
+          memory: 1G
+          cpus: '1.0'
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    environment:
+      - ENV=production
+      - DEBUG=false
+      - WORKER_TYPE=strategy
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      nats:
+        condition: service_healthy
+      timescaledb:
+        condition: service_healthy
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+    networks:
+      - forex-network
+
+  worker-risk:
+    build:
+      target: production
+    container_name: forex-worker-risk
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    environment:
+      - ENV=production
+      - DEBUG=false
+      - WORKER_TYPE=risk
+    depends_on:
+      nats:
+        condition: service_healthy
+    networks:
+      - forex-network
+
+  worker-execution:
+    build:
+      target: production
+    container_name: forex-worker-execution
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    environment:
+      - ENV=production
+      - DEBUG=false
+      - WORKER_TYPE=execution
+    depends_on:
+      nats:
+        condition: service_healthy
+    networks:
+      - forex-network
+
+  worker-data:
+    build:
+      target: production
+    container_name: forex-worker-data
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: '2.0'
+        reservations:
+          memory: 1G
+          cpus: '1.0'
+    environment:
+      - ENV=production
+      - DEBUG=false
+      - WORKER_TYPE=data
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    networks:
+      - forex-network
+
+  # ============================================
+  # INFRASTRUCTURE - PRODUCTION
+  # ============================================
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    container_name: forex-timescaledb
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: '2.0'
+        reservations:
+          memory: 2G
+          cpus: '1.0'
+    environment:
+      POSTGRES_DB: market_data
+      POSTGRES_USER: trader
+      POSTGRES_PASSWORD_FILE: /run/secrets/timescale_password
+    volumes:
+      - timescale_data:/var/lib/postgresql/data
+      - ./scripts/init-timescaledb.sql:/docker-entrypoint-initdb.d/init-timescaledb.sql:ro
+    ports:
+      - "127.0.0.1:5432:5432"  # Bind to localhost only
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trader -d market_data"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    secrets:
+      - timescale_password
+    networks:
+      - forex-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  redis:
+    image: redis:7-alpine
+    container_name: forex-redis
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 512M
+    command: redis-server --appendonly yes --maxmemory 1gb --maxmemory-policy allkeys-lru --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    ports:
+      - "127.0.0.1:6379:6379"  # Bind to localhost only
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    secrets:
+      - redis_password
+    networks:
+      - forex-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  influxdb:
+    image: influxdb:2.7
+    container_name: forex-influxdb
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: admin
+      DOCKER_INFLUXDB_INIT_PASSWORD_FILE: /run/secrets/influx_password
+      DOCKER_INFLUXDB_INIT_ORG: trading
+      DOCKER_INFLUXDB_INIT_BUCKET: metrics
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN_FILE: /run/secrets/influx_token
+    volumes:
+      - influx_data:/var/lib/influxdb2
+      - influx_config:/etc/influxdb2
+    ports:
+      - "127.0.0.1:8086:8086"  # Bind to localhost only
+    healthcheck:
+      test: ["CMD", "influx", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    secrets:
+      - influx_password
+      - influx_token
+    networks:
+      - forex-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  nats:
+    image: nats:2.10-alpine
+    container_name: forex-nats
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    command: ["-js", "-m", "8222", "-sd", "/data"]
+    ports:
+      - "127.0.0.1:4222:4222"  # Client connections (localhost only)
+      - "127.0.0.1:8222:8222"  # Monitoring (localhost only)
+    volumes:
+      - nats_data:/data
+    healthcheck:
+      test: ["CMD", "nats", "server", "check", "jetstream"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - forex-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ============================================
+  # MONITORING - PRODUCTION
+  # ============================================
+  prometheus:
+    image: prom/prometheus:v2.50.0
+    container_name: forex-prometheus
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--storage.tsdb.retention.size=10GB'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./config/prometheus/rules:/etc/prometheus/rules:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "127.0.0.1:9090:9090"  # Bind to localhost only
+    networks:
+      - forex-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  grafana:
+    image: grafana/grafana:10.3.0
+    container_name: forex-grafana
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD_FILE: /run/secrets/grafana_password
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_INSTALL_PLUGINS: grafana-piechart-panel
+      GF_SERVER_ROOT_URL: https://your-domain.com/grafana/
+      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+    volumes:
+      - ./config/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./config/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "127.0.0.1:3000:3000"  # Bind to localhost only
+    depends_on:
+      - prometheus
+    networks:
+      - forex-network
+    secrets:
+      - grafana_password
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ============================================
+  # ALERTMANAGER (Production)
+  # ============================================
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: forex-alertmanager
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+    volumes:
+      - ./config/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager_data:/alertmanager
+    ports:
+      - "127.0.0.1:9093:9093"
+    networks:
+      - forex-network
+
+# ============================================
+# SECRETS (Production - Use Docker Secrets)
+# ============================================
+secrets:
+  timescale_password:
+    external: true
+  influx_password:
+    external: true
+  influx_token:
+    external: true
+  secret_key:
+    external: true
+  jwt_secret:
+    external: true
+  grafana_password:
+    external: true
+  redis_password:
+    external: true
+
+# ============================================
+# NETWORKS
+# ============================================
+networks:
+  forex-network:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: forex-br0
+
+# ============================================
+# VOLUMES
+# ============================================
+volumes:
+  timescale_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt/data/forex/timescale
+  redis_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt/data/forex/redis
+  influx_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt/data/forex/influx
+  influx_config:
+    driver: local
+  nats_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt/data/forex/nats
+  prometheus_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt/data/forex/prometheus
+  grafana_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt/data/forex/grafana
+  alertmanager_data:
+    driver: local

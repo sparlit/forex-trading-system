@@ -1,0 +1,14 @@
+[Unit]
+Description=Forex Trading System Health Monitor
+After=network.target docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+User=forex
+WorkingDirectory=/opt/forex-trading-system
+ExecStart=/opt/forex-trading-system/.venv/bin/python scripts/health_monitor.py
+TimeoutSec=60
+
+[Install]
+WantedBy=multi-user.target
