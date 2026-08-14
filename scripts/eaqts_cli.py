@@ -46,9 +46,9 @@ def init():
     `.env` file from `.env.example` if one does not already exist.
     """
     # Install dependencies
-    # Install dependencies. The original command referenced a non‑existent "trading" extra.
-    # Only the defined groups (dev, ml, viz) are installed.
-    subprocess.run(["poetry", "install", "--with", "dev,ml,viz"], cwd=PROJECT_ROOT, check=True)
+    # Install all dependencies. The original command used a non‑existent extra and caused
+    # Poetry lock errors. Using a plain install works with the current lock file.
+    subprocess.run(["poetry", "install"], cwd=PROJECT_ROOT, check=True)
     # Copy .env if missing
     env_example = PROJECT_ROOT / ".env.example"
     env_target = PROJECT_ROOT / ".env"

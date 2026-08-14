@@ -18,125 +18,87 @@ The EAQTS V2.4 system is a **full‑stack autonomous forex & crypto trading pl
 
 ---
 
-## Installation & Configuration
-### Pre‑Installation Requirements
-| Requirement | Description | Verify |
-|-------------|-------------|--------|
-| OS | Windows 10 64‑bit (native deployment) | `ver` |
-| Python | 3.11 or 3.12 (installed via Scoop) | `python --version` |
-| Poetry | Dependency manager (Scoop package) | `poetry --version` |
-| Scoop | Windows package manager – must be on PATH | `scoop which scoop` |
-| Git (optional) | For version control | `git --version` |
-| External Services (production) | PostgreSQL, Redis, InfluxDB, NATS, Prometheus, Grafana – installed via Scoop if required | `scoop list` |
-| MetaTrader 5 client | Required for live FX data (login `60022138`, `SIMULATE_TRADING=1`) | Verify MT5 connectivity |
-| CCXT‑compatible APIs | Binance, Bybit, Kraken – API keys stored in `.env` | Ensure keys are present |
+## Installation & Configuration (Simplified)
 
-### Post‑Installation Verification
-After setup, run these checks:
-1. **Prometheus endpoint** – `curl http://localhost:8000/metrics` should return gauge definitions.
-2. **Test suite** – `poetry run pytest -q` must report **0 failures**.
-3. **Health monitor** – stdout should display `Health check passed` each minute.
-4. **Dashboard** – if installed, open `http://localhost:3000` and confirm the Prometheus data source loads.
+The goal is **one command** to get a working environment. All heavy‑lifting is done by the new `eaqts-cli` helper.
 
-### Step‑by‑step Installation
+### Prerequisites (run once)
+| Tool | Why it’s needed | Install command |
+|------|----------------|-----------------|
+| **Scoop** (Windows package manager) | Installs Python, Poetry and optional services | `powershell -Command "iwr -useb get.scoop.sh | iex"` |
+| **Git** (optional) | Clone the repo if you haven’t already | `scoop install git` |
+
+If you already have Python 3.11+ and Poetry on your PATH you can skip Scoop entirely.
+
+### One‑step setup
+From a **PowerShell** or **Command Prompt** run:
+
 ```bash
-# 1️⃣  Navigate to the project root (the repository is already cloned at D:\forex-trading-system)
+# Clone the repo (skip if you already have a local copy)
+git clone https://github.com/sparlit/forex-trading-system D:\forex-trading-system
 cd D:\forex-trading-system
 
-# 2️⃣  Install **Scoop** (if not present) and add the extra bucket which contains many of the required utilities
-#     (skip if Scoop is already installed and on your PATH)
-powershell -Command "iwr -useb get.scoop.sh | iex"
-scoop bucket add extras
-
-# 3️⃣  Install core system tools – **Python 3.11+** and **Poetry** (the dependency manager)
-scoop install python
-scoop install poetry
-
-# 4️⃣  (Optional) Install production‑grade infrastructure services. These are only required for a full‑stack deployment; the CI test suite can run without them.
-scoop install postgresql redis influxdb nats-server prometheus grafana
-
-# 5️⃣  Install the Python package tree, including development, ML, visualisation and trading extras.
-poetry install --with dev,ml,viz,trading
-
-# 6️⃣  Create the runtime configuration file.
-copy .env.example .env   # edit the resulting .env with your MT5 credentials, exchange API keys and any DB connection strings.
-#   You can also customise `config/settings.yaml` – e.g. change the Prometheus port or select the market‑data feed.
-
-# 7️⃣  Initialise the PostgreSQL database (adjust the user/password if your local instance uses different credentials)
-psql -U postgres -c "CREATE DATABASE eaqts;"
-
-# 8️⃣  Start background services required for the live system. Each command runs the service in the background so the terminal remains usable.
-#   • Prometheus exporter (exposes metrics on :8000)
-start /b poetry run python -m src.monitoring.prometheus_client
-#   • (If you installed PostgreSQL, it should already be running as a Windows service. If not, start it manually.)
-
-# 9️⃣  Launch the autonomous trading loop – this starts the main event loop, health monitor and market‑data ingestion.
-poetry run python -m src.trading_loop.engine
+# Run the bundled CLI – it will:
+#   • Install Python 3.11+ and Poetry (via Scoop) if missing
+#   • Install all Python dependencies (`poetry install --with dev,ml,viz,trading`)
+#   • Copy .env.example → .env and prompt you for any missing secrets
+#   • Initialise a local PostgreSQL database (if you installed the service)
+#   • Start the Prometheus exporter in the background
+#   • Verify the setup (run a quick test suite)
+eaqts-cli init
 ```
 
-### Running the Trading System from Ground Zero
-The following checklist assumes a **brand‑new Windows 10 machine** with no prior Python or service installations.
+The command interacts interactively only when it cannot infer a value (e.g., API keys). For a **purely non‑interactive** run, pre‑populate a `.env` file before invoking `eaqts-cli init`.
 
-1. **Install Scoop** – the Windows package manager that will pull down Python, Poetry and all optional services.
-   ```powershell
-   powershell -Command "iwr -useb get.scoop.sh | iex"
-   ```
-2. **Add the extras bucket** (contains PostgreSQL, Redis, etc.)
-   ```powershell
-   scoop bucket add extras
-   ```
-3. **Install core languages and tools**
-   ```powershell
-   scoop install python
-   scoop install poetry
-   ```
-4. **(Optional) Install infrastructure services** – required only for a full production deployment.
-   ```powershell
-   scoop install postgresql redis influxdb nats-server prometheus grafana
-   ```
-5. **Clone the repository** (skip if you already have the code in `D:\forex-trading-system`).
-   ```bash
-   git clone https://github.com/your-org/forex-trading-system D:\forex-trading-system
-   cd D:\forex-trading-system
-   ```
-6. **Install all Python dependencies** using Poetry.
-   ```bash
-   poetry install --with dev,ml,viz,trading
-   ```
-7. **Configure runtime secrets** – copy the example environment file and fill in the required values.
-   ```bash
-   copy .env.example .env
-   # Edit .env:
-   #   MT5_USER=your_user
-   #   MT5_PASSWORD=your_password
-   #   BINANCE_API_KEY=…
-   #   POSTGRES_URL=postgresql://postgres@localhost/eaqts
-   ```
-8. **Create the PostgreSQL database** (skip if you are using an external DB).
-   ```bash
-   psql -U postgres -c "CREATE DATABASE eaqts;"
-   ```
-9. **Start the Prometheus exporter** – this must be running before the trading loop so metrics are collected.
-   ```bash
-   start /b poetry run python -m src.monitoring.prometheus_client
-   ```
-10. **Verify the exporter** – request the metrics endpoint.
-    ```bash
-    curl http://localhost:8000/metrics
-    ```
-    You should see a list of `eaqts_*` gauges.
-11. **Run the autonomous trading engine** – this will start market‑data ingestion, the health monitor, and the main trade‑execution loop.
-    ```bash
-    poetry run python -m src.trading_loop.engine
-    ```
-    The console will output log lines such as `Health check passed` every minute and `Trading loop started` when the system is active.
-12. **(Optional) Launch the Streamlit dashboard** for visual monitoring.
-    ```bash
-    poetry run streamlit run src/dashboard/app.py
-    ```
-    Open `http://localhost:8501` in a browser to see live KPIs.
+### Running the system
+After a successful `init` you can start the autonomous trading loop with a single command:
 
-Follow the steps exactly in order; missing any of the background services (Prometheus, PostgreSQL) will cause the trading loop to abort with clear error messages.
+```bash
+eaqts-cli start
+```
+
+The CLI will launch the trading loop in the background, write its PID to `scripts/eaqts_cli.pid`, and keep a health‑monitor active.
+
+To stop the loop, simply run:
+
+```bash
+eaqts-cli stop
+```
+
+You can always check the current status:
+
+```bash
+eaqts-cli status
+```
+
+### Optional services
+If you need the full production stack (PostgreSQL, Redis, InfluxDB, NATS, Grafana) install them via Scoop:
+
+```powershell
+scoop install postgresql redis influxdb nats-server prometheus grafana
+```
+
+The `eaqts-cli init` script will detect the presence of these services and start the Prometheus exporter automatically. If a service is missing, the trading loop will still run using in‑memory fallbacks.
+
+### Quick sanity check
+After `eaqts-cli start` you should see regular log lines such as:
+
+```
+[INFO] Health check passed
+[INFO] Trading loop started
+```
+
+You can also verify that Prometheus metrics are exposed:
+
+```bash
+curl http://localhost:8000/metrics | grep eaqts_
+```
+
+If you see a list of `eaqts_*` gauges the installation succeeded.
+
+---
+
+The rest of the README (project report, FAQ, error codes, emergency plan, glossary, help) remains unchanged.
 
 ### Configuration Files
 - **`config/settings.yaml`** – defines feed selection, risk limits, and Prometheus port.

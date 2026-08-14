@@ -18,4 +18,5 @@ WIN_DIR=$(cygpath -w "$DIR")
 # Call the Windows batch file directly. The outer double‑quotes belong to cmd.exe,
 # the inner escaped quotes protect any spaces in the path. Arguments are
 # passed unchanged.
-cmd.exe /c "\"$WIN_DIR\\eaqts.cmd\" $*"
+# Use cmd.exe to run the batch file; quoting handled by the shell.
+cmd.exe /c "$WIN_DIR\\eaqts.cmd" $*
