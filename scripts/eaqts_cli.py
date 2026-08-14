@@ -76,7 +76,8 @@ def start():
     # Windows when the parent exits. We use the native `start` command to run the
     # process in its own console window (hidden) so it persists.
     if os.name == "nt":
-        # `start ""` creates a new window; we redirect output to nul.
+        # Use Poetry to ensure the virtual‑env is activated for the detached process.
+        # `start ""` launches a new console window that runs the command and then exits.
         cmd = ["cmd.exe", "/c", "start", "", "poetry", "run", "python", "-m", "src.trading_loop.engine"]
         proc = subprocess.Popen(cmd, cwd=PROJECT_ROOT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     else:

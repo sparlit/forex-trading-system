@@ -4,6 +4,6 @@
 cd /d "%~dp0"
 
 :: Forward all arguments to the Python CLI script.
-poetry run python scripts/eaqts_cli.py %*
+python scripts/eaqts_cli.py %*
 
 :: End of wrapper
