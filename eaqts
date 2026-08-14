@@ -15,4 +15,7 @@ WIN_DIR=$(cygpath -w "$DIR")
 # is interpreted as a single command. All arguments passed to this shim are
 # forwarded unchanged.
 # Use $* to forward all arguments as a simple list (preserves spacing)
+# Call the Windows batch file directly. The outer double‑quotes belong to cmd.exe,
+# the inner escaped quotes protect any spaces in the path. Arguments are
+# passed unchanged.
 cmd.exe /c "\"$WIN_DIR\\eaqts.cmd\" $*"
