@@ -4,7 +4,11 @@
 # single‑word command that works in a normal Windows CMD prompt.
 
 # Resolve the directory of this script (the repository root)
+# Resolve POSIX path of this script's directory
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Invoke the Windows batch wrapper via cmd.exe
-cmd.exe /c "${DIR}\\eaqts.cmd" "$@"
+# Convert to Windows style (e.g., C:\path) for cmd.exe
+WIN_DIR=$(cygpath -w "$DIR")
+
+# Invoke the Windows batch wrapper via cmd.exe using the Windows path
+cmd.exe /c "\"$WIN_DIR\\eaqts.cmd\" "$@""
