@@ -93,6 +93,25 @@ def start():
     PID_FILE.write_text(str(proc.pid))
     typer.echo(f"Started trading loop (pid {proc.pid})")
 
+
+@app.command()
+def dashboard():
+    """Launch a native Streamlit dashboard displaying live trading KPIs.
+    The dashboard fetches Prometheus metrics from ``http://localhost:8000/metrics``
+    (exposed by the trading loop) and updates every 5 seconds.
+    """
+    # Ensure Streamlit is installed; if not, provide a helpful message.
+    try:
+        import streamlit as st  # noqa: F401
+    except Exception as exc:  # pragma: no cover
+        typer.echo("Streamlit is not installed. Run `poetry add streamlit` first.")
+        raise typer.Exit(code=1) from exc
+
+    # Run the dashboard script using Streamlit. This command blocks until the user
+    # closes the UI.
+    cmd = ["streamlit", "run", "scripts/dashboard.py", "--server.port", "8501"]
+    subprocess.run(cmd, cwd=PROJECT_ROOT)
+
 @app.command()
 def stop():
     """Stop a running trading loop.
