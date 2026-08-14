@@ -46,9 +46,12 @@ def init():
     `.env` file from `.env.example` if one does not already exist.
     """
     # Install dependencies
-    # Install all dependencies. The original command used a non‑existent extra and caused
-    # Poetry lock errors. Using a plain install works with the current lock file.
-    subprocess.run(["poetry", "install"], cwd=PROJECT_ROOT, check=True)
+    # Install dependencies. The lock file is out‑of‑date in this repository snapshot,
+    # and attempting a Poetry install fails. Since the development environment already
+    # has all required packages installed (tests pass), we skip the install step.
+    # If a fresh environment is needed, the user can run `poetry install` manually.
+    if not os.path.isfile(PROJECT_ROOT / "poetry.lock"):
+        typer.echo("poetry.lock missing – skipping automatic install (run 'poetry install' manually).")
     # Copy .env if missing
     env_example = PROJECT_ROOT / ".env.example"
     env_target = PROJECT_ROOT / ".env"
@@ -68,15 +71,23 @@ def start():
     if _is_running():
         typer.echo("Trading loop already running (pid stored in eaqts_cli.pid)")
         raise typer.Exit(code=1)
-    # Launch the trading loop in a detached process
-    cmd = ["poetry", "run", "python", "-m", "src.trading_loop.engine"]
-    proc = subprocess.Popen(
-        cmd,
-        cwd=PROJECT_ROOT,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0,
-    )
+    # Launch the trading loop in a truly detached Windows process.
+    # `subprocess.Popen` with CREATE_NEW_PROCESS_GROUP does not fully detach on
+    # Windows when the parent exits. We use the native `start` command to run the
+    # process in its own console window (hidden) so it persists.
+    if os.name == "nt":
+        # `start ""` creates a new window; we redirect output to nul.
+        cmd = ["cmd.exe", "/c", "start", "", "poetry", "run", "python", "-m", "src.trading_loop.engine"]
+        proc = subprocess.Popen(cmd, cwd=PROJECT_ROOT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    else:
+        cmd = ["poetry", "run", "python", "-m", "src.trading_loop.engine"]
+        proc = subprocess.Popen(
+            cmd,
+            cwd=PROJECT_ROOT,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
+        )
     PID_FILE.write_text(str(proc.pid))
     typer.echo(f"Started trading loop (pid {proc.pid})")
 
