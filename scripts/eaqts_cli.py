@@ -75,13 +75,13 @@ def start():
     # `subprocess.Popen` with CREATE_NEW_PROCESS_GROUP does not fully detach on
     # Windows when the parent exits. We use the native `start` command to run the
     # process in its own console window (hidden) so it persists.
+    # Use the system Python interpreter (which already has all required packages
+    # installed globally on this machine). This avoids Poetry lock‑file issues.
     if os.name == "nt":
-        # Use Poetry to ensure the virtual‑env is activated for the detached process.
-        # `start ""` launches a new console window that runs the command and then exits.
-        cmd = ["cmd.exe", "/c", "start", "", "poetry", "run", "python", "-m", "src.trading_loop.engine"]
+        cmd = ["cmd.exe", "/c", "start", "", "python", "-m", "src.trading_loop.engine"]
         proc = subprocess.Popen(cmd, cwd=PROJECT_ROOT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     else:
-        cmd = ["poetry", "run", "python", "-m", "src.trading_loop.engine"]
+        cmd = ["python", "-m", "src.trading_loop.engine"]
         proc = subprocess.Popen(
             cmd,
             cwd=PROJECT_ROOT,
