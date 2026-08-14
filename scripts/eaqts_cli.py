@@ -78,7 +78,8 @@ def start():
     # Use the system Python interpreter (which already has all required packages
     # installed globally on this machine). This avoids Poetry lock‑file issues.
     if os.name == "nt":
-        cmd = ["cmd.exe", "/c", "start", "", "python", "-m", "src.trading_loop.engine"]
+        # `/b` runs the command without creating a new window and returns immediately.
+        cmd = ["cmd.exe", "/c", "start", "", "/b", "python", "-m", "src.trading_loop.engine"]
         proc = subprocess.Popen(cmd, cwd=PROJECT_ROOT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     else:
         cmd = ["python", "-m", "src.trading_loop.engine"]
