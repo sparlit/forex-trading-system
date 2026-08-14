@@ -11,4 +11,8 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WIN_DIR=$(cygpath -w "$DIR")
 
 # Invoke the Windows batch wrapper via cmd.exe using the Windows path
-cmd.exe /c "\"$WIN_DIR\\eaqts.cmd\" "$@""
+# The inner double quotes ensure the full path (which may contain spaces)
+# is interpreted as a single command. All arguments passed to this shim are
+# forwarded unchanged.
+# Use $* to forward all arguments as a simple list (preserves spacing)
+cmd.exe /c "\"$WIN_DIR\\eaqts.cmd\" $*"
